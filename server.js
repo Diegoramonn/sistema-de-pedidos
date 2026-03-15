@@ -16,17 +16,18 @@ CREATE TABLE IF NOT EXISTS pedidos (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 cliente TEXT,
 produto TEXT,
-quantidade INTEGER
+quantidade INTEGER,
+preco REAL
 )
 `)
 
-app.post("/pedido", (req,res)=>{
+app.post("/pedido",(req,res)=>{
 
-const {cliente, produto, quantidade} = req.body
+const {cliente, produto, quantidade, preco} = req.body
 
 db.run(
-"INSERT INTO pedidos (cliente, produto, quantidade) VALUES (?,?,?)",
-[cliente, produto, quantidade]
+"INSERT INTO pedidos (cliente, produto, quantidade, preco) VALUES (?,?,?,?)",
+[cliente, produto, quantidade, preco]
 )
 
 res.send("Pedido salvo")
@@ -41,6 +42,52 @@ res.json(rows)
 
 })
 
-app.listen(3000,()=>{
-console.log("Servidor rodando na porta 3000")
+
+app.delete("/excluir/:id", (req, res) => {
+
+const id = req.params.id
+
+db.run("DELETE FROM pedidos WHERE id = ?", [id], function(err){
+
+if (err) {
+console.log(err)
+return res.status(500).json({erro: "Erro ao excluir"})
+}
+
+res.json({mensagem: "Pedido excluído", id: id})
+
 })
+
+})
+
+app.post("/login",(req,res)=>{
+
+let usuario = req.body.usuario
+let senha = req.body.senha
+
+if(usuario === "admin" && senha === "123"){
+
+res.json({
+mensagem:"Login realizado com sucesso"
+})
+
+}else{
+
+res.json({
+mensagem:"Usuário ou senha inválidos"
+})
+
+}
+
+})
+
+app.get("/login",(req,res)=>{
+res.send("Use POST para fazer login")
+})
+
+app.listen(3000, () => {
+console.log("Servidor rodando em http://localhost:3000")
+})
+
+app.use(express.static("public"))
+
